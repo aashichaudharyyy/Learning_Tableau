@@ -59,7 +59,7 @@ Tableau is widely used in business analytics, finance, healthcare, education, an
 
 <hr>
 
-<h2 style="color:#374151;">Interview Summary</h2>
+<h2 style="color:#374151;">Summary</h2>
 
 <p>
 Tableau is a Business Intelligence and visualization tool that converts raw data into interactive dashboards. It is preferred for its ease of use, strong visualization capabilities, and efficiency in handling structured data for decision-making purposes.

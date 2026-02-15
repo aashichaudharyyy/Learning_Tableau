@@ -53,98 +53,110 @@ Advantages of relationships:
 
 ---
 
-## Joins in Tableau
+## Joins in Tableau — Clear Example with Data
 
-A join combines two tables into a single table based on a common field. Unlike relationships, joins physically merge data at the data source level.
+A join combines two tables into a single table based on a common field. The type of join determines which records are included in the final dataset.
 
-The type of join determines which records are included in the final dataset.
+Assume we have the following two tables:
 
-Assume we have two tables:
+---
 
-Orders Table
+### Orders Table
 
 | OrderID | CustomerID | Sales |
 |----------|------------|-------|
+| 1        | C1         | 200   |
+| 2        | C2         | 150   |
+| 3        | C3         | 300   |
 
-Customers Table
+---
+
+### Customers Table
 
 | CustomerID | CustomerName |
-|-------------|--------------|
+|------------|--------------|
+| C1         | Aditi        |
+| C2         | Rohan        |
+| C4         | Meera        |
 
-They are joined on `CustomerID`.
-
----
-
-### 1. Inner Join
-
-An Inner Join returns only the matching records from both tables.
-
-Diagram:
-
-Orders        Customers  
-   A  B  C        B  C  D  
-        ↓  
-Result:      B  C  
-
-Only common values are retained.
+We join these tables using the field **CustomerID**.
 
 ---
 
-### 2. Left Join
+## 1. Inner Join
 
-A Left Join returns all records from the left table and matching records from the right table.
+An Inner Join keeps only the matching records from both tables.
 
-Diagram:
+Matching CustomerIDs: C1 and C2
 
-Orders (Left)     Customers (Right)  
-   A  B  C              B  C  D  
-        ↓  
-Result: A  B  C  
+### Result:
 
-Non-matching records from the right table become NULL.
+| OrderID | CustomerID | Sales | CustomerName |
+|----------|------------|-------|--------------|
+| 1        | C1         | 200   | Aditi        |
+| 2        | C2         | 150   | Rohan        |
 
----
-
-### 3. Right Join
-
-A Right Join returns all records from the right table and matching records from the left table.
-
-Diagram:
-
-Orders (Left)     Customers (Right)  
-   A  B  C              B  C  D  
-        ↓  
-Result: B  C  D  
-
-Non-matching records from the left table become NULL.
+Records that do not match in both tables are excluded.
 
 ---
 
-### 4. Full Outer Join
+## 2. Left Join
 
-A Full Outer Join returns all records from both tables.
+A Left Join keeps all records from the left table (Orders) and matching records from the right table (Customers).
 
-Diagram:
+### Result:
 
-Orders        Customers  
-   A  B  C        B  C  D  
-        ↓  
-Result: A  B  C  D  
+| OrderID | CustomerID | Sales | CustomerName |
+|----------|------------|-------|--------------|
+| 1        | C1         | 200   | Aditi        |
+| 2        | C2         | 150   | Rohan        |
+| 3        | C3         | 300   | NULL         |
 
-Matching records merge; non-matching records contain NULL values.
+All Orders are preserved. If no match exists in Customers, NULL values are inserted.
 
 ---
 
-### Important Consideration
+## 3. Right Join
 
-Improper joins can cause:
+A Right Join keeps all records from the right table (Customers) and matching records from the left table (Orders).
 
-- Data duplication
-- Incorrect aggregations
-- Inflated measures
-- Missing data
+### Result:
 
-Therefore, understanding join logic is essential for accurate modeling.
+| OrderID | CustomerID | Sales | CustomerName |
+|----------|------------|-------|--------------|
+| 1        | C1         | 200   | Aditi        |
+| 2        | C2         | 150   | Rohan        |
+| NULL     | C4         | NULL  | Meera        |
+
+All Customers are preserved. If no match exists in Orders, NULL values are inserted.
+
+---
+
+## 4. Full Outer Join
+
+A Full Outer Join keeps all records from both tables.
+
+### Result:
+
+| OrderID | CustomerID | Sales | CustomerName |
+|----------|------------|-------|--------------|
+| 1        | C1         | 200   | Aditi        |
+| 2        | C2         | 150   | Rohan        |
+| 3        | C3         | 300   | NULL         |
+| NULL     | C4         | NULL  | Meera        |
+
+All records from both tables are included. Non-matching values are filled with NULL.
+
+---
+
+## Key Observation
+
+- Inner Join → Only matching records  
+- Left Join → All left + matching right  
+- Right Join → All right + matching left  
+- Full Join → All records from both tables  
+
+Understanding join behavior is essential to avoid incorrect aggregations, duplicated records, or missing data in Tableau dashboards.
 
 
 ## Blending in Tableau
@@ -158,24 +170,131 @@ Blending is useful when:
 - Primary and secondary data sources are required
 
 ---
+# Data Schemas in Tableau
 
-## Star Schema and Snowflake Schema
+A schema defines how tables are structured and connected inside a database.
 
-In structured databases, data modeling often follows specific patterns:
+In analytics and Tableau, two common schema types are:
 
-### Star Schema
+- Star Schema
+- Snowflake Schema
 
-A central fact table connected to multiple dimension tables.  
-This structure is simple, efficient, and commonly used in analytics.
-
-### Snowflake Schema
-
-Dimension tables are further normalized into additional related tables.  
-This structure is more complex but reduces redundancy.
-
-Tableau works efficiently with star schema models because they are optimized for analytical queries.
+Understanding schema design helps in building efficient data models and improving performance.
 
 ---
+
+## 1. Star Schema
+
+A Star Schema consists of:
+
+- One central Fact Table
+- Multiple Dimension Tables directly connected to the fact table
+
+The structure looks like a star.
+
+### Example
+
+Fact Table: Sales_Fact
+
+| OrderID | DateID | ProductID | CustomerID | Sales |
+|----------|--------|-----------|------------|-------|
+
+Dimension Tables:
+
+Date_Dim  
+| DateID | Date | Month | Year |
+
+Product_Dim  
+| ProductID | ProductName | Category |
+
+Customer_Dim  
+| CustomerID | CustomerName | Region |
+
+### Structure Diagram (Logical View)
+
+                         Date_Dim
+                            |
+         Product_Dim — Sales_Fact — Customer_Dim
+
+All dimensions connect directly to the central fact table.
+
+### Characteristics
+
+- Simple structure
+- Easy to understand
+- Faster queries
+- Minimal joins
+- Preferred for BI tools like Tableau
+
+---
+
+## 2. Snowflake Schema
+
+A Snowflake Schema is an extension of Star Schema.
+
+Dimension tables are further normalized into additional related tables.
+
+### Example
+
+Fact Table: Sales_Fact
+
+| OrderID | DateID | ProductID | CustomerID | Sales |
+|----------|--------|-----------|------------|-------|
+
+Product_Dim  
+| ProductID | ProductName | CategoryID |
+
+Category_Dim  
+| CategoryID | CategoryName |
+
+Customer_Dim  
+| CustomerID | CustomerName | RegionID |
+
+Region_Dim  
+| RegionID | RegionName |
+
+### Structure Diagram (Logical View)
+
+                         Category_Dim
+                              |
+           Product_Dim — Sales_Fact — Customer_Dim — Region_Dim
+                              |
+                          Date_Dim
+
+Here, dimensions are connected to other dimension tables, forming a snowflake-like structure.
+
+### Characteristics
+
+- More complex structure
+- More joins required
+- Better data normalization
+- Slightly slower queries compared to Star Schema
+- Used when storage optimization is important
+
+---
+
+## Star vs Snowflake Comparison
+
+| Feature              | Star Schema | Snowflake Schema |
+|----------------------|-------------|------------------|
+| Structure            | Simple      | Complex          |
+| Normalization        | Low         | High             |
+| Number of Joins      | Fewer       | More             |
+| Query Performance    | Faster      | Slightly Slower  |
+| Ease of Understanding| Easy        | Moderate         |
+
+---
+
+## Why Schema Matters in Tableau
+
+- Impacts performance
+- Affects aggregation behavior
+- Influences how dimensions and measures relate
+- Determines complexity of joins
+- Affects dashboard responsiveness
+
+Choosing the right schema improves data clarity and analytical efficiency.
+
 
 ## Granularity in Data Modeling
 

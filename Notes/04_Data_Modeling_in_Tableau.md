@@ -1,5 +1,4 @@
 # 04 — Data Modeling in Tableau
-
 ## Introduction
 
 Data modeling in Tableau refers to the way different tables are connected and structured to create a meaningful analytical dataset. It defines how data from multiple sources interacts, combines, and behaves during analysis.
